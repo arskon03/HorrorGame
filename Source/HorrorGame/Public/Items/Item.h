@@ -31,7 +31,12 @@ private:
 	bool bIsMoving;
 
 	/** How long the actor has been in play measured in seconds */
+	UPROPERTY(BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
 	double Lifetime;
+
+	/** The relative time the actor */
+	UPROPERTY(BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	double ActorTime;
 
 	/** The previous sine wave movement of the actor */
 	FVector PreviousSineMovement;
@@ -45,11 +50,11 @@ private:
 	FVector WorldOffset;
 
 	/** The frequency of the sine wave movement of the actor in Hertz */
-	UPROPERTY(VisibleAnywhere, Category = "SineWave", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,Category = "SineWave", meta = (AllowPrivateAccess = "true"))
 	float SineWaveFrequency;
 
 	/** The amplitude of the sine wave movement of the actor */
-	UPROPERTY(VisibleAnywhere, Category = "SineWave", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SineWave", meta = (AllowPrivateAccess = "true"))
 	float SineWaveAmplitude;
 
 	/** The Color of the actor */
@@ -60,6 +65,29 @@ public:
 	// Sets default values for this actor's properties
 	AItem();
 
+private:
+	/**
+	 * Returns the value of a tranformed sine
+	 * @param Value			The value to use in the sine
+	 * @param Amplitude		The amplitude of the sine (min = -Amplitude + SineOffset, max = Amplitude + SineOffset)
+	 * @param SineOffset	The offset of the sine function
+	 * @param Frequency		The frequency of the sine (in Hertz)
+	 * @param PhaseOffset	The offset of the phase of the sine
+	*/
+	UFUNCTION(BlueprintPure, Category = "SineWave", meta = (AllowPrivateAccess = "true"))
+	float TransformedSine(float Value, float Amplitude = 1.f, float Frequency = 1.f, float SineOffset = 0.f, float PhaseOffset = 0.f);
+
+	/**
+	 * Returns the value of a tranformed cosine
+	 * @param Value			The value to use in the cosine
+	 * @param Amplitude		The amplitude of the cosine (min = -Amplitude + SineOffset, max = Amplitude + SineOffset)
+	 * @param SineOffset	The offset of the cosine function
+	 * @param Frequency		The frequency of the cosine (in Hertz)
+	 * @param PhaseOffset	The offset of the phase of the cosine
+	*/
+	UFUNCTION(BlueprintPure, Category = "SineWave", meta = (AllowPrivateAccess = "true"))
+		float TransformedCosine(float Value, float Amplitude = 1.f, float Frequency = 1.f, float SineOffset = 0.f, float PhaseOffset = 0.f);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -69,9 +97,9 @@ protected:
 
 	/**
 	 * Interpolates the item's location to a random location within a 50 unit radius of the start location
-	 * @param DeltaTime Time between last and current frame
+	 * @param DeltaTime			Time between last and current frame
 	 * @param EqualityThreshold The threshold at which the item is considered to have reached its target location
-	 * @param MovementSpeed The speed at which the item moves
+	 * @param MovementSpeed		The speed at which the item moves
 	*/
 	void MoveItemInterp(float DeltaTime, float MovementSpeed, float EqualityThreshold);
 
@@ -97,26 +125,26 @@ protected:
 
 	/**
 	 * Moves the item's location to a random location at a constant speed within a 50 unit radius of the start location
-	 * @param DeltaTime Time between last and current frame
+	 * @param DeltaTime			Time between last and current frame
 	 * @param EqualityThreshold The threshold at which the item is considered to have reached its target location
-	 * @param MovementSpeed The speed at which the item moves
+	 * @param MovementSpeed		The speed at which the item moves
 	*/
 	void MoveItemConstant(float DeltaTime, float MovementSpeed, float EqualityThreshold);
 
 	/**
 	 * Interpolates the item's rotation to a random rotation
-	 * @param DeltaTime Time between last and current frame
+	 * @param DeltaTime			Time between last and current frame
 	 * @param EqualityThreshold The threshold at which the item is considered to have reached its target rotation
-	 * @param RotationalSpeed The speed at which the item rotates
+	 * @param RotationalSpeed	The speed at which the item rotates
 	*/
 	void RotateItemInterp(float DeltaTime, float RotationalSpeed, float EqualityThreshold);
 
 
 	/**
 	 * Rotates the item's location to a random rotation at a constant speed
-	 * @param DeltaTime Time between last and current frame
+	 * @param DeltaTime			Time between last and current frame
  	 * @param EqualityThreshold The threshold at which the item is considered to have reached its target rotation
-	 * @param RotationalSpeed The speed at which the item rotates
+	 * @param RotationalSpeed	The speed at which the item rotates
 	*/
 	void RotateItemConstant(float DeltaTime, float RotationalSpeed, float EqualityThreshold);
 

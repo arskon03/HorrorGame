@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Items/Item.h"
@@ -22,6 +22,7 @@ AItem::AItem()
 	bIsMoving = false;
 
 	Lifetime = 0.f;
+	ActorTime = 0.f;
 	PreviousSineMovement = FVector::ZeroVector;
 
 	SineWaveFrequency = 1.f;
@@ -29,6 +30,22 @@ AItem::AItem()
 
 	bGenerateRandomLocationTarget = true;
 	WorldOffset = FVector::ZeroVector;
+}
+
+float AItem::TransformedSine(float Value, float Amplitude, float Frequency, float SineOffset, float PhaseOffset)
+{
+	// The phase is equal to 2πT * (x + φ)
+	const double SineWavePhase = (Value * (2.f * 3.141592f) + PhaseOffset) * Frequency;
+
+	return FMath::Sin(SineWavePhase) * Amplitude + SineOffset;
+}
+
+float AItem::TransformedCosine(float Value, float Amplitude, float Frequency, float SineOffset, float PhaseOffset)
+{
+	// The phase is equal to 2πT * (x + φ)
+	const double SineWavePhase = (Value * (2.f * 3.141592f) + PhaseOffset) * Frequency;
+
+	return FMath::Cos(SineWavePhase) * Amplitude + SineOffset;
 }
 
 // Called when the game starts or when spawned
@@ -40,6 +57,7 @@ void AItem::BeginPlay()
 	LocationStart = GetActorLocation();
 
 	Lifetime = 0.f;
+	ActorTime = 0.f;
 	PreviousSineMovement = FVector::ZeroVector;
 }
 
@@ -216,18 +234,25 @@ void AItem::Tick(float DeltaTime)
 	// Cancel previous frame's sine movement
 	AddActorWorldOffset(-PreviousSineMovement);
 
-	// Update actor's lifetime
-	Lifetime += DeltaTime;
-
 	/* Call behaviour functions */
 
 	RotateItemConstant(DeltaTime);
 
 	MoveItemConstant(DeltaTime);
 
+	// Update actor's lifetime
+	Lifetime += DeltaTime;
+
+	// Increament the actor's relative time by a variable amount determined by multiplying DeltaTime with a Transformed Sine Curve
+	const float Amplitude = 0.375;
+	const float Frequency = 0.1;
+	const float SineOffset = 0.875;
+	const float Multiplier = TransformedSine(Lifetime, Amplitude, Frequency, SineOffset); // Multiplier between 0.5 and 1.25 with a period of 10 seconds
+	ActorTime += DeltaTime * Multiplier;
+
 	// Get new offset for sine movement
-	const double SineWavePhase = Lifetime * (2.f * 3.141592f) * SineWaveFrequency;
-	PreviousSineMovement.Z = FMath::Sin(SineWavePhase) * SineWaveAmplitude;
+	PreviousSineMovement.Z = TransformedSine(ActorTime, SineWaveAmplitude, SineWaveFrequency);
+
 	AddActorWorldOffset(PreviousSineMovement);
 
 	/*** Debug start ***/
